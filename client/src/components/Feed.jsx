@@ -2,25 +2,27 @@ import Post from "./Post";
 import PostPage from "../pages/PostPage";
 import React, { useState, useEffect } from "react";
 import { Route, Routes, Link } from "react-router-dom"; // Import Link from react-router-dom
+import { fetchPosts } from "../api";
 
 function Feed() {
-  const [data, setData] = useState(null);
+  const [posts, setPosts] = useState(null);
+
+  const refreshPosts = async () => {
+    const serverPosts = await fetchPosts();
+    setPosts(serverPosts);
+  };
 
   useEffect(() => {
-    fetch("http://localhost:3001/api/posts")
-      .then((response) => {
-        if (response.ok) {
-          return response.json();
-        }
-        throw new Error("Network response was not ok.");
-      })
-      .then((data) => setData(data))
-      .catch((error) => console.error("Error fetching data:", error));
+    try {
+      refreshPosts();
+    } catch (error) {
+      console.error("Error fetching posts:", error);
+    }
   }, []);
 
   const renderPosts = () => {
-    return data ? (
-      data.map((post, index) => <Post key={index} {...post} />)
+    return posts ? (
+      posts.map((post, index) => <Post key={index} {...post} />)
     ) : (
       <p>Loading...</p>
     );
