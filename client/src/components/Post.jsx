@@ -1,19 +1,20 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { Link } from "react-router-dom";
 
-function Post({ _id, title, content }) {
+function Post({ _id, title, content, author, createdAt }) {
   return (
-    <div className="py-6 mb-5 text-lg border">
-      {/* Render the data */}
-      <div>
-        <Link to={`/posts/${_id}`}>
-          <div key={title}>
-            <h3>{title}</h3>
-            <p>{content}</p>
-          </div>
-        </Link>
+    <Link to={`/posts/${_id}`}>
+      <div className="p-4 mb-4 transition duration-300 bg-white border border-gray-200 rounded-md shadow-md hover:shadow-lg">
+        <div className="mb-2">
+          {author && (
+            <div className="text-sm text-blue-500">Posted by {author}</div>
+          )}
+          <div className="text-sm text-gray-600">{createdAt}</div>
+        </div>
+        <h2 className="mb-2 text-lg font-bold">{title}</h2>
+        <p className="text-gray-700">{content}</p>
       </div>
-    </div>
+    </Link>
   );
 }
 

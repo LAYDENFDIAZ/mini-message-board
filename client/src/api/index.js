@@ -13,3 +13,21 @@ export const fetchPost = async (postId) => {
   console.log(" from axios", post);
   return post;
 };
+
+export const addComment = async (postId, commentData) => {
+  const data = await axios.post(
+    `${BASE_URL}/posts/${postId}/comments`,
+    commentData
+  );
+
+  console.log("Comment added:", data);
+};
+
+export const createPost = async ({ title, content }) => {
+  const data = await axios.post(`${BASE_URL}/posts/create-post`, {
+    title,
+    content,
+  });
+
+  console.log("from api", title, content);
+};

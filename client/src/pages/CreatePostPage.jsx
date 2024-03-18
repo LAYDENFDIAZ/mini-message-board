@@ -1,68 +1,107 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
+import { createPost } from "../api";
+import { Link } from "react-router-dom";
 
 function CreatePostPage() {
+  // State variables to store form input values, error message, and success message
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
+  const [error, setError] = useState(null);
+  const [successMessage, setSuccessMessage] = useState("");
 
-  useEffect(() => {
-    // POST request using fetch inside useEffect React hook
-    const requestOptions = {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ title: "React Hooks POST Request Example" }),
-    };
-    fetch("https://reqres.in/api/posts", requestOptions)
-      .then((response) => response.json())
-      .then((data) => setPostId(data.id));
+  // Function to handle form submission
+  async function handleSubmit(e) {
+    e.preventDefault(); // Prevent default form submission behavior
 
-    // empty dependency array means this effect will only run once (like componentDidMount in classes)
-  }, []);
+    // Input sanitization: Validate and clean user input
+    const sanitizedTitle = title.trim(); // Trim leading/trailing whitespace
+    const sanitizedContent = content.trim(); // Trim leading/trailing whitespace
+
+    try {
+      // Attempt to create a new post using the API function
+      await createPost({ title: sanitizedTitle, content: sanitizedContent });
+      // If successful, update success message, clear input fields, and reset error
+      setSuccessMessage("Post created successfully!");
+      setTitle("");
+      setContent("");
+      setError(null);
+    } catch (error) {
+      // If an error occurs, update error message and log the error
+      setError("Error creating post. Please try again.");
+      console.error("Error creating post", error);
+    }
+  }
 
   return (
-    <div className="container px-4 py-8 mx-auto">
-      <h1 className="mb-6 text-2xl font-bold">Create a New Post</h1>
-      <form onSubmit={handleSubmit} className="max-w-2xl mx-auto">
-        <div className="mb-4">
-          <label
-            htmlFor="title"
-            className="block mb-2 text-lg font-medium text-gray-700"
-          >
-            Title
-          </label>
-          <input
-            type="text"
-            id="title"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            placeholder="Enter post title"
-            required
-          />
+    <div className="flex items-center justify-center min-h-screen bg-gray-100">
+      <div className="w-full max-w-md">
+        <div className="px-8 py-6 bg-white rounded shadow-md">
+          <h2 className="mb-4 text-2xl font-bold text-center">
+            Create a New Post
+          </h2>
+          {/* Display error message if there is one */}
+          {error && <p className="mb-4 text-sm text-red-500">{error}</p>}
+          {/* Display success message if there is one */}
+          {successMessage && (
+            <p className="mb-4 text-sm text-green-500">{successMessage}</p>
+          )}
+          {/* Form for creating a new post */}
+          <form onSubmit={handleSubmit}>
+            {/* Title input field */}
+            <div className="mb-4">
+              <label
+                htmlFor="title"
+                className="block mb-2 font-bold text-gray-700"
+              >
+                Title
+              </label>
+              <input
+                id="title"
+                type="text"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                className="w-full px-3 py-2 leading-tight text-gray-700 border rounded appearance-none focus:outline-none focus:shadow-outline"
+                placeholder="Enter post title"
+                required
+              />
+            </div>
+            {/* Content input field */}
+            <div className="mb-6">
+              <label
+                htmlFor="content"
+                className="block mb-2 font-bold text-gray-700"
+              >
+                Content
+              </label>
+              <textarea
+                id="content"
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+                className="w-full px-3 py-2 leading-tight text-gray-700 border rounded appearance-none focus:outline-none focus:shadow-outline"
+                rows="4"
+                placeholder="Enter post content"
+                required
+              />
+            </div>
+            {/* Button to submit the form */}
+            <div className="flex items-center justify-center">
+              <button
+                type="submit"
+                className="px-4 py-2 font-bold text-white bg-blue-500 rounded hover:bg-blue-700 focus:outline-none focus:shadow-outline"
+              >
+                Create Post
+              </button>
+              {/* Link to return to the home page */}
+              <Link
+                to="/"
+                className="inline-block ml-4 text-sm font-bold text-blue-500 align-baseline hover:text-blue-800"
+              >
+                Return to Home
+              </Link>
+            </div>
+          </form>
         </div>
-        <div className="mb-6">
-          <label
-            htmlFor="content"
-            className="block mb-2 text-lg font-medium text-gray-700"
-          >
-            Content
-          </label>
-          <textarea
-            id="content"
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            rows="4"
-            className="block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            placeholder="Enter post content"
-            required
-          />
-        </div>
-        <button
-          type="submit"
-          className="inline-flex justify-center px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-        >
-          Create Post
-        </button>
-      </form>
+      </div>
     </div>
   );
 }
