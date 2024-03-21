@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { createPost } from "../api";
 import { Link } from "react-router-dom";
 
-function CreatePostPage() {
+function CreatePostPage({ handleAddPost }) {
   // State variables to store form input values, error message, and success message
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
@@ -16,15 +16,21 @@ function CreatePostPage() {
     // Input sanitization: Validate and clean user input
     const sanitizedTitle = title.trim(); // Trim leading/trailing whitespace
     const sanitizedContent = content.trim(); // Trim leading/trailing whitespace
+    // Check to make sure we have a title and content
+    if (!sanitizedTitle || !sanitizedContent) {
+      setError("Please enter a title and content for your post.");
+      return;
+    }
 
     try {
       // Attempt to create a new post using the API function
-      await createPost({ title: sanitizedTitle, content: sanitizedContent });
+      const newPost = await createPost({ title: sanitizedTitle, content: sanitizedContent });
       // If successful, update success message, clear input fields, and reset error
       setSuccessMessage("Post created successfully!");
       setTitle("");
       setContent("");
       setError(null);
+      handleAddPost(newPost)
     } catch (error) {
       // If an error occurs, update error message and log the error
       setError("Error creating post. Please try again.");

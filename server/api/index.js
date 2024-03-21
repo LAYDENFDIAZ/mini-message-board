@@ -7,21 +7,10 @@ const router = express.Router();
 router.get("/posts", async (req, res) => {
   try {
     const posts = await database.getAllPosts();
-    res.status(200).json(posts);
+    res.status(200).json({ data: posts });
   } catch (err) {
     console.error("Error retrieving posts", err);
     res.status(500).send(err.message);
-  }
-});
-router.post("/posts/create-post", async (req, res) => {
-  try {
-    const post = await database.insertPost(req.body);
-    console.log(post);
-
-    res.status(201).json(post); // Sending the created post back, or just a success message
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Error creating the post" }); // Send a server error response
   }
 });
 
@@ -29,7 +18,12 @@ router.get("/posts/:postId", async (req, res) => {
   //const post = database.getAllPosts();
   const { postId } = req.params;
   const post = await database.getPost(postId);
-  res.send(post);
+  // handle case where post doesn't exist
+  if (!post) {
+    return res.status(404).json({ message: "Post not found" });
+  }
+
+  res.send({ data: post });
 });
 
 router.post("/posts/:postId/comments", async (req, res) => {
@@ -53,12 +47,16 @@ router.post("/posts/:postId/comments", async (req, res) => {
 
 // Route to add a new post
 router.post("/posts", async (req, res) => {
+  // Validate request body
+  if (!req.body.title || !req.body.content) {
+    return res.status(400).send("Invalid post data");
+  }
   try {
-    await database.insertPost({
+    const newPost = await database.insertPost({
       title: req.body.title,
       content: req.body.content,
     });
-    res.status(201).send("Post added successfully");
+    res.status(201).send({ message: "Post added successfully", data: newPost });
   } catch (err) {
     console.error("Error creating new post", err);
     res.status(500).send(err.message);
