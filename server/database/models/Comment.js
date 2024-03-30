@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-const postSchema = new mongoose.Schema({
+const CommentSchema = new mongoose.Schema({
   title: String,
   content: String,
   author: String,
@@ -8,7 +8,8 @@ const postSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
-  parentPost: {
+  // Foreign key to the post that this comment belongs to
+  post: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Post",
   },
@@ -16,14 +17,8 @@ const postSchema = new mongoose.Schema({
     type: Number,
     default: 0,
   },
-
-  replies: [
-    {
-      postId: ForeignKey to Post,
-    }
-  ],
 });
 
-const PostModel = mongoose.model("Post", postSchema);
+const PostModel = mongoose.model("Post", CommentSchema);
 
 module.exports = PostModel;

@@ -15,12 +15,16 @@ export const fetchPost = async (postId) => {
 };
 
 export const addComment = async (postId, commentData) => {
-  const data = await axios.post(
-    `${BASE_URL}/posts/${postId}/comments`,
-    commentData
-  );
-
-  console.log("Comment added:", data);
+  try {
+    const data = await axios.post(
+      `${BASE_URL}/posts/${postId}/comments`,
+      commentData
+    );
+    return data;
+    console.log("Comment added:", data);
+  } catch (error) {
+    throw error;
+  }
 };
 
 export const createPost = async ({ title, content }) => {

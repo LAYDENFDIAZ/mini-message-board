@@ -1,58 +1,32 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { ArrowUpIcon, ArrowDownIcon } from "@heroicons/react/outline";
-import Comment from "../components/comment";
+import Comment from "../components/Comment";
 import { fetchPost, addComment } from "../api";
 import NavBar from "../components/NavBar";
 
-function PostPage() {
+function PostPage({ getPost, handleUpdatePosts }) {
   // State variables to store post data, loading status, error message, comment input, and post ID
-  const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(null);
   const [commentInput, setCommentInput] = useState("");
   const { postId } = useParams();
-
-  // Function to fetch post data from the API
-  useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true); // Set loading status to true while fetching data
-      try {
-        // Fetch post data using the provided post ID
-        const postData = await fetchPost(postId);
-        // Filter out null comments and update post data
-        postData.comments = postData.comments.filter(
-          (comment) => comment != null
-        );
-        setData(postData);
-      } catch (err) {
-        // If an error occurs, set the error message
-        setError(err.message);
-      } finally {
-        setLoading(false); // Set loading status to false when fetching is done
-      }
-    };
-
-    fetchData(); // Invoke the fetchData function
-  }, [postId]); // Run the effect whenever the post ID changes
+  const data = getPost(postId);
 
   // Function to handle adding a new comment
   const handleAddComment = async () => {
-    if (commentInput.trim()) {
-      try {
-        // Attempt to add a new comment using the API function
-        await addComment(postId, { content: commentInput });
-        setCommentInput(""); // Clear the comment input field
-        // Fetch updated post data to reflect the newly added comment
-        const updatedPost = await fetchPost(postId);
-        updatedPost.comments = updatedPost.comments.filter(
-          (comment) => comment != null
-        );
-        setData(updatedPost); // Update post data with the new comment
-      } catch (err) {
-        console.error("Error adding comment:", err); // Log any errors that occur
-      }
+    if (!commentInput.trim()) return;
+    try {
+      setLoading(true)
+      // Attempt to add a new comment using the API function
+      const updatedPost = await addComment(postId, { content: commentInput });
+      setCommentInput(""); // Clear the comment input fiel
+      handleUpdatePosts(updatedPost);
+    } catch (err) {
+      setError(err.message)
+      console.error("Error adding comment:", err); // Log any errors that occur
     }
+    setLoading(false)
   };
 
   // Format the date of the post
@@ -77,7 +51,6 @@ function PostPage() {
   // Render the post content and comments section
   return (
     <div>
-      <NavBar /> {/* Render the navigation bar */}
       {/* Render the post content */}
       <article className="max-w-4xl mx-auto my-8 bg-white border border-gray-200 rounded-md">
         <div className="p-4 md:p-6">
@@ -94,7 +67,7 @@ function PostPage() {
         <section className="p-4 border-t md:p-6">
           <h2 className="mb-4 text-lg font-semibold md:text-xl">Comments</h2>
           {/* Render comments or "No comments yet" message */}
-          {data?.comments && data.comments.length > 0 ? (
+          {data?.comments?.length ? (
             data.comments.map((comment, index) => (
               <div
                 key={index}
@@ -102,13 +75,7 @@ function PostPage() {
               >
                 {/* Render individual comment component */}
                 <Comment
-                  content={comment.content}
-                  author={comment.author || "Anonymous"}
-                  createdAt={
-                    comment.createdAt
-                      ? new Date(comment.createdAt).toLocaleDateString("en-US")
-                      : ""
-                  }
+                  {...comment}
                 />
               </div>
             ))
