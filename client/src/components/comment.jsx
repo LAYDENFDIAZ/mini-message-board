@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 
 function Comment({ content, author, createdAt, onAddReply, commentId }) {
-  const authorName = comment.author || "Anonymous";
-  const createdAtStr = comment.createdAt
-    ? new Date(comment.createdAt).toLocaleDateString("en-US")
+  const authorName = author || "Anonymous";
+  const createdAtStr = createdAt
+    ? new Date(createdAt).toLocaleDateString("en-US")
     : "";
   const [showReplyInput, setShowReplyInput] = useState(false);
   const [replyContent, setReplyContent] = useState("");

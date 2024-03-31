@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 
+// Define the schema
 const postSchema = new mongoose.Schema({
   title: String,
   content: String,
@@ -16,14 +17,16 @@ const postSchema = new mongoose.Schema({
     type: Number,
     default: 0,
   },
-
   replies: [
     {
-      postId: ForeignKey to Post,
-    }
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Post", // References the Post model itself
+    },
   ],
 });
 
+// Create the Post model
 const PostModel = mongoose.model("Post", postSchema);
 
+// Export the model
 module.exports = PostModel;

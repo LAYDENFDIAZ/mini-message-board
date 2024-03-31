@@ -1,8 +1,9 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import Post from "./components/Post";
+import Post from "../components/Post";
 
 function HomePage({ posts }) {
+  console.log("posts", posts);
   return (
     <div className="container px-4 mx-auto my-8">
       {/* Container for the feed */}

@@ -6,7 +6,7 @@ const router = express.Router();
 // Route to get all posts
 router.get("/posts", async (req, res) => {
   try {
-    const posts = await database.getAllPosts();
+    const posts = await database.getAllOriginPosts();
     res.status(200).json({ data: posts });
   } catch (err) {
     console.error("Error retrieving posts", err);
@@ -15,15 +15,23 @@ router.get("/posts", async (req, res) => {
 });
 
 router.get("/posts/:postId", async (req, res) => {
-  //const post = database.getAllPosts();
   const { postId } = req.params;
   const post = await database.getPost(postId);
+
+  const getReplies = post.replies.map(async (replyId) => {
+    return await database.getPost(replyId);
+  });
+
+  const postReplies = await Promise.all(getReplies);
+
+  post.replies = postReplies;
+
   // handle case where post doesn't exist
   if (!post) {
     return res.status(404).json({ message: "Post not found" });
   }
 
-  res.send({ data: post });
+  res.send(post);
 });
 
 router.post("/posts/:postId/comments", async (req, res) => {

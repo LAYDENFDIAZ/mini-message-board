@@ -1,8 +1,8 @@
 const mongoose = require("mongoose");
 const PostModel = require("./models/Post.js");
 
-const getAllPosts = async () => {
-  const posts = await PostModel.find();
+const getAllOriginPosts = async () => {
+  const posts = await PostModel.find({ parentPost: { $exists: false } });
   return posts;
 };
 
@@ -27,12 +27,22 @@ const addComment = async (postId, commentData) => {
     }
 
     const post = await PostModel.findById(postId);
+
     if (!post) {
       throw new Error("Post not found");
     }
 
-    post.comments.push(commentData);
+    const replyPost = new PostModel({
+      parentPost: postId,
+      content: commentData.content,
+    });
+
+    await replyPost.save();
+
+    post.replies.push(replyPost._id);
+
     await post.save();
+
     return post;
   } catch (error) {
     throw error;
@@ -41,7 +51,7 @@ const addComment = async (postId, commentData) => {
 
 module.exports = {
   database: mongoose,
-  getAllPosts,
+  getAllOriginPosts,
   getPost,
   insertPost,
   addComment,

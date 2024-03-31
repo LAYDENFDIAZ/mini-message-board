@@ -10,7 +10,6 @@ export const fetchPosts = async () => {
 export const fetchPost = async (postId) => {
   const data = await axios.get(`${BASE_URL}/posts/${postId}`);
   const post = data.data;
-  console.log(" from axios", post);
   return post;
 };
 

@@ -1,37 +1,47 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { ArrowUpIcon, ArrowDownIcon } from "@heroicons/react/outline";
 import Comment from "../components/Comment";
 import { fetchPost, addComment } from "../api";
 import NavBar from "../components/NavBar";
 
-function PostPage({ getPost, handleUpdatePosts }) {
+function PostPage({ handleUpdatePosts }) {
   // State variables to store post data, loading status, error message, comment input, and post ID
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(null);
+  const [post, setPost] = useState(null);
   const [commentInput, setCommentInput] = useState("");
   const { postId } = useParams();
-  const data = getPost(postId);
+
+  const getPost = useCallback(async () => {
+    const serverPost = await fetchPost(postId);
+    console.log("serverPost", serverPost);
+    setPost(serverPost);
+  }, []);
+  useEffect(() => {
+    getPost();
+  }, []);
 
   // Function to handle adding a new comment
-  const handleAddComment = async () => {
+  const handleAddComment = async (postId) => {
     if (!commentInput.trim()) return;
     try {
-      setLoading(true)
+      setLoading(true);
       // Attempt to add a new comment using the API function
       const updatedPost = await addComment(postId, { content: commentInput });
       setCommentInput(""); // Clear the comment input fiel
+      getPost();
       handleUpdatePosts(updatedPost);
     } catch (err) {
-      setError(err.message)
+      setError(err.message);
       console.error("Error adding comment:", err); // Log any errors that occur
     }
-    setLoading(false)
+    setLoading(false);
   };
 
   // Format the date of the post
-  const formattedDate = data?.createdAt
-    ? new Date(data.createdAt).toLocaleDateString("en-US", {
+  const formattedDate = post?.createdAt
+    ? new Date(post.createdAt).toLocaleDateString("en-US", {
         year: "numeric",
         month: "long",
         day: "numeric",
@@ -54,11 +64,11 @@ function PostPage({ getPost, handleUpdatePosts }) {
       {/* Render the post content */}
       <article className="max-w-4xl mx-auto my-8 bg-white border border-gray-200 rounded-md">
         <div className="p-4 md:p-6">
-          <h1 className="text-xl font-bold md:text-2xl">{data?.title}</h1>
-          <p className="text-gray-700">{data?.content}</p>
+          <h1 className="text-xl font-bold md:text-2xl">{post?.title}</h1>
+          <p className="text-gray-700">{post?.content}</p>
           <div className="flex items-center justify-between text-sm text-gray-600">
             <span>
-              Posted by <span className="text-blue-500">{data?.author}</span> on{" "}
+              Posted by <span className="text-blue-500">{post?.author}</span> on{" "}
               {formattedDate}
             </span>
           </div>
@@ -67,8 +77,8 @@ function PostPage({ getPost, handleUpdatePosts }) {
         <section className="p-4 border-t md:p-6">
           <h2 className="mb-4 text-lg font-semibold md:text-xl">Comments</h2>
           {/* Render comments or "No comments yet" message */}
-          {data?.comments?.length ? (
-            data.comments.map((comment, index) => (
+          {post?.replies?.length ? (
+            post.replies.map((comment, index) => (
               <div
                 key={index}
                 className="p-2 pl-4 my-2 border-l-4 border-blue-500 rounded-md bg-gray-50"
@@ -76,6 +86,10 @@ function PostPage({ getPost, handleUpdatePosts }) {
                 {/* Render individual comment component */}
                 <Comment
                   {...comment}
+                  onAddReply={() => {
+                    console.log("reply", comment);
+                    handleAddComment(comment._id);
+                  }}
                 />
               </div>
             ))
@@ -93,7 +107,9 @@ function PostPage({ getPost, handleUpdatePosts }) {
             />
             {/* Button to submit the new comment */}
             <button
-              onClick={handleAddComment}
+              onClick={() => {
+                handleAddComment(postId);
+              }}
               className="px-4 py-2 mt-2 font-semibold text-white bg-blue-500 rounded hover:bg-blue-600 focus:outline-none focus:ring focus:border-blue-500"
               disabled={!commentInput.trim()}
             >
