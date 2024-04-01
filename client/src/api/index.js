@@ -7,6 +7,33 @@ export const fetchPosts = async () => {
   return posts;
 };
 
+export const login = async (userName, password) => {
+  try {
+    const response = await axios.post(`${BASE_URL}/users/login`, {
+      userName,
+      password,
+    });
+
+    console.log(response);
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const register = async (userName, password) => {
+  try {
+    const response = await axios.post(`${BASE_URL}/users/register`, {
+      userName,
+      password,
+    });
+    console.log(response.data.token);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
 export const fetchPost = async (postId) => {
   const data = await axios.get(`${BASE_URL}/posts/${postId}`);
   const post = data.data;

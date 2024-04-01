@@ -6,9 +6,13 @@ import CreatePostPage from "./pages/CreatePostPage";
 import NavBar from "./components/NavBar";
 import { useEffect, useState } from "react";
 import { fetchPosts } from "./api";
+import LoginForm from "./components/LoginForm";
+import RegisterForm from "./components/RegisterForm";
 
 function App() {
-  const [posts, setPosts] = useState([]); // State to store the posts data
+  const [posts, setPosts] = useState([]);
+  const [user, setUser] = useState();
+  // State to store the posts data
   // Effect hook to fetch posts data when the component mounts
 
   const handleAddPost = (post) => {
@@ -46,6 +50,12 @@ function App() {
       <Routes>
         <Route path="/*" element={<HomePage posts={posts} />} />
         <Route path="/create-post" element={<CreatePostPage />} />
+        <Route path="/users/login" element={<LoginForm setUser={setUser} />} />
+        <Route
+          path="/users/register"
+          element={<RegisterForm setUser={setUser} />}
+        />
+
         <Route
           path="/posts/:postId"
           element={<PostPage handleUpdatePosts={handleUpdatePosts} />}

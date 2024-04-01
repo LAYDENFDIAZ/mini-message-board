@@ -12,8 +12,14 @@ function NavBar() {
           <Link to="/" className="hover:text-red-500">
             Home
           </Link>
-          <Link to="/about" className="hover:text-red-500">
-            About
+          <Link to="/create-post" className="hover:text-red-500">
+            Create Post
+          </Link>
+          <Link to="/users/register" className="hover:text-red-500">
+            Register
+          </Link>
+          <Link to="/users/login" className="hover:text-red-500">
+            Login
           </Link>
         </div>
       </div>

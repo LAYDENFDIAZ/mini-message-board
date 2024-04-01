@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const PostModel = require("./models/Post.js");
+const UserModel = require("./models/User.js");
 
 const getAllOriginPosts = async () => {
   const posts = await PostModel.find({ parentPost: { $exists: false } });
@@ -49,10 +50,34 @@ const addComment = async (postId, commentData) => {
   }
 };
 
+const createUser = async (userName, password) => {
+  const newUser = new UserModel({
+    username: userName,
+    password: password,
+  });
+
+  await newUser.save();
+
+  return newUser;
+};
+
+const findUserById = (id) => {
+  const user = UserModel.findById(id);
+  return user;
+};
+
+const findUserByUsername = async (username) => {
+  const user = await UserModel.findOne({ username });
+  return user;
+};
+
 module.exports = {
   database: mongoose,
   getAllOriginPosts,
   getPost,
   insertPost,
   addComment,
+  createUser,
+  findUserById,
+  findUserByUsername,
 };

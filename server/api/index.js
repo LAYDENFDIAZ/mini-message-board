@@ -1,73 +1,57 @@
 const express = require("express");
+const postRouter = require("./post.router");
 const database = require("../database");
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
+passport = require("./passport");
+
+const SECRET = process.env.SECRET || "funkyFries";
 
 const router = express.Router();
 
-// Route to get all posts
-router.get("/posts", async (req, res) => {
-  try {
-    const posts = await database.getAllOriginPosts();
-    res.status(200).json({ data: posts });
-  } catch (err) {
-    console.error("Error retrieving posts", err);
-    res.status(500).send(err.message);
+const issueToken = (userId) => {
+  return jwt.sign({ sub: userId }, SECRET);
+};
+
+router.use("/posts", postRouter);
+
+router.get(
+  "/test-auth",
+  passport.authenticate("jwt", { session: false }),
+  async (req, res, next) => {
+    res.send("you sir, have access");
   }
-});
+);
 
-router.get("/posts/:postId", async (req, res) => {
-  const { postId } = req.params;
-  const post = await database.getPost(postId);
-
-  const getReplies = post.replies.map(async (replyId) => {
-    return await database.getPost(replyId);
-  });
-
-  const postReplies = await Promise.all(getReplies);
-
-  post.replies = postReplies;
-
-  // handle case where post doesn't exist
-  if (!post) {
-    return res.status(404).json({ message: "Post not found" });
-  }
-
-  res.send(post);
-});
-
-router.post("/posts/:postId/comments", async (req, res) => {
-  const { postId } = req.params;
-  const comment = req.body;
-
+router.post("/users/register", async (req, res, next) => {
   try {
-    if (!comment || !comment.content) {
-      return res.status(400).json({ message: "Invalid comment data" });
-    }
+    const { userName, password } = req.body;
+    const encryptedPass = await bcrypt.hash(password, 5);
 
-    const updatedPost = await database.addComment(postId, comment);
-    res.status(201).json(updatedPost);
+    const user = await database.createUser(userName, encryptedPass);
+    const signedToken = issueToken(user._id);
+    res.send({ _id: user._id, username: user.username, token: signedToken });
   } catch (error) {
-    console.error("Error adding comment:", error);
-    res
-      .status(500)
-      .json({ message: "An error occurred while adding the comment" });
+    next(error);
   }
 });
 
-// Route to add a new post
-router.post("/posts", async (req, res) => {
-  // Validate request body
-  if (!req.body.title || !req.body.content) {
-    return res.status(400).send("Invalid post data");
-  }
+router.post("/users/login", async (req, res, next) => {
   try {
-    const newPost = await database.insertPost({
-      title: req.body.title,
-      content: req.body.content,
-    });
-    res.status(201).send({ message: "Post added successfully", data: newPost });
-  } catch (err) {
-    console.error("Error creating new post", err);
-    res.status(500).send(err.message);
+    const { userName, password } = req.body;
+
+    const user = await database.findUserByUsername(userName);
+
+    if (!user) throw new Error("User not found");
+
+    const isMatchingPassword = await bcrypt.compare(password, user.password);
+
+    if (!isMatchingPassword) throw new Error("Incorrect Password");
+
+    const signedToken = issueToken(user._id);
+    res.send({ _id: user._id, username: user.username, token: signedToken });
+  } catch (error) {
+    next(error);
   }
 });
 
